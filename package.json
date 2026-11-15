@@ -1,6 +1,6 @@
 {
   "name": "pi-copilot-style",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "GitHub Copilot CLI's look for pi: one-line tool rows, ❯ / ● message chrome, thinking labels, and the Copilot light/dark palettes",
   "keywords": [
     "pi-package",

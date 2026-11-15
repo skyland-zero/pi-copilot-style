@@ -93,6 +93,22 @@ function editStatsFromArgs(args: any): Stats {
 }
 
 /**
+ * Equality for remembered values. `Object.is` alone is not enough: the edit row
+ * stores `countDiff()`, which rebuilds `{ additions, deletions }` on every
+ * render, so a reference check reports a change forever. The row would then
+ * invalidate itself on every frame and repaint the whole transcript at the
+ * renderer's frame limit while the session sits idle.
+ */
+function sameValue(a: unknown, b: unknown): boolean {
+	if (Object.is(a, b)) return true;
+	if (a === null || b === null || typeof a !== "object" || typeof b !== "object") return false;
+	const left = a as Record<string, unknown>;
+	const right = b as Record<string, unknown>;
+	const keys = Object.keys(left);
+	return keys.length === Object.keys(right).length && keys.every((key) => Object.is(left[key], right[key]));
+}
+
+/**
  * Store a value in the row's shared state and repaint once when it changes.
  *
  * The repaint is deferred: this runs inside pi's `updateDisplay()`, and
@@ -101,7 +117,7 @@ function editStatsFromArgs(args: any): Stats {
 function remember(context: any, key: string, value: unknown): void {
 	const state = context?.state;
 	if (!state) return;
-	if (Object.is(state[key], value)) return;
+	if (sameValue(state[key], value)) return;
 	state[key] = value;
 	const invalidate = context.invalidate;
 	if (typeof invalidate !== "function" || state.pendingInvalidate) return;
